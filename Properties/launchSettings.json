@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "AircraftTracker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "EMAIL_SERVER": "",
+        "EMAIL_PORT": "",
+        "EMAIL_TO": "",
+        "AIRPORT": "",
+        "FREQUENCY": "",
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
