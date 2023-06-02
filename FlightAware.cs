@@ -40,33 +40,41 @@ internal class FlightAware : IFlightParser
         }
         catch (Exception ex)
         {
-            throw new Exception("A Parsing Error occured parsing flightaware.com", ex);
+            throw new FlightException("A Parsing Error occured parsing flightaware.com", ex);
         }
     }
 
-    private static IEnumerable<LiveFlight> GetFlightsFromTable(HtmlNode enroute)
+    private IEnumerable<LiveFlight> GetFlightsFromTable(HtmlNode enroute)
     {
         var rows = enroute.FirstChild.Elements("tr");
 
         if (rows is null || !rows.Any())
             return Enumerable.Empty<LiveFlight>();
 
-        return rows.Select(r => ConvertRowToFlight(r));
+        return rows.Select(r => ConvertRowToFlight(r)).Where(r => r is not null)!;
     }
 
-    private static LiveFlight ConvertRowToFlight(HtmlNode node)
+    private LiveFlight? ConvertRowToFlight(HtmlNode node)
     {
-        var cells = node.Elements("td").ToList();
+        try
+        {
+            var cells = node.Elements("td").ToList();
 
-        var ident = WebUtility.HtmlDecode(cells[0].InnerText.Trim());
-        var link = cells[0].Element("span").Element("a").Attributes["href"].DeEntitizeValue.Trim();
-        var airline = cells[0].Element("span").Attributes["title"].DeEntitizeValue.Trim();
-        var type = WebUtility.HtmlDecode(cells[1].InnerText.Trim());
-        var fulltype = cells[1].Element("span").Attributes["title"].DeEntitizeValue.Trim();
-        var from = WebUtility.HtmlDecode(cells[2].InnerText.Trim());
-        var depart = WebUtility.HtmlDecode(cells[3].InnerText.Trim());
-        var arrive = WebUtility.HtmlDecode(cells[5].InnerText.Trim());
+            var ident = WebUtility.HtmlDecode(cells[0].InnerText.Trim());
+            var link = cells[0].Element("span").Element("a").Attributes["href"].DeEntitizeValue.Trim();
+            var airline = cells[0].Element("span").Attributes["title"].DeEntitizeValue.Trim();
+            var type = WebUtility.HtmlDecode(cells[1].InnerText.Trim());
+            var fulltype = cells[1].Element("span").Attributes["title"].DeEntitizeValue.Trim();
+            var from = WebUtility.HtmlDecode(cells[2].InnerText.Trim());
+            var depart = cells.Count >= 4 ? WebUtility.HtmlDecode(cells[3].InnerText.Trim()) : string.Empty;
+            var arrive = cells.Count >= 6 ? WebUtility.HtmlDecode(cells[5].InnerText.Trim()) : string.Empty;
 
-        return new LiveFlight(ident, link, airline, type, fulltype, from, depart, arrive);
+            return new LiveFlight(ident, link, airline, type, fulltype, from, depart, arrive);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occured parsing table, ignoring flight");
+            return default;
+        }
     }
 }

@@ -4,6 +4,8 @@ using AircraftTracker.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 using System.Text;
 
 namespace AircraftTracker;
@@ -16,6 +18,7 @@ internal class FlightChecker : IHostedService
     private readonly INotificationService notification;
     private readonly int frequency;
     private readonly string airport;
+    private readonly AsyncRetryPolicy<IEnumerable<LiveFlight>> retryPolicy;
 
     public FlightChecker(IConfiguration config,
                          ILogger<FlightChecker> logger,
@@ -35,11 +38,11 @@ internal class FlightChecker : IHostedService
 
         logger.LogInformation("Frequency of updates : {frequency} sec", frequency);
 
+        retryPolicy = Policy<IEnumerable<LiveFlight>>.Handle<FlightException>().WaitAndRetryAsync(new[] { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10) });
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var numErrors = 0;
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -48,7 +51,8 @@ internal class FlightChecker : IHostedService
                 logger.LogDebug("Alert Types : {AlertTypes}", string.Join(',', options.Value.AlertTypes));
                 logger.LogDebug("Identified Types : {IdentifiedTypes}", string.Join(',', options.Value.IdentifiedTypes));
 
-                var flights = await liveFlights.GetFlightsAsync(airport, cancellationToken); // Gets Flights from FlightAware
+                var flights = await retryPolicy.ExecuteAsync(async (token) => await liveFlights.GetFlightsAsync(airport, token), cancellationToken); // Gets Flights from FlightAware
+
                 var newFlights = storage.AddFlights(flights); // Adds them to persistant Storage and returns any that are new
                 var newTypesFlights = CheckForNewTypes(newFlights); // Checks new flights against types already known.
                 var alertFlights = CheckForAlerts(newFlights); // Checks new flights against types to be alerted.
@@ -95,13 +99,7 @@ internal class FlightChecker : IHostedService
             catch (Exception ex)
             {
                 logger.LogCritical(ex, "An error occured checking flights");
-                numErrors++;
-
-                if (numErrors > 3)
-                {
-                    logger.LogCritical("3 Errors received, terminating application");
-                    return;
-                }
+                return;
             }
 
             await Task.Delay(1000 * frequency, cancellationToken);
