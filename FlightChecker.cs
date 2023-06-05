@@ -38,7 +38,9 @@ internal class FlightChecker : IHostedService
 
         logger.LogInformation("Frequency of updates : {frequency} sec", frequency);
 
-        retryPolicy = Policy<IEnumerable<LiveFlight>>.Handle<FlightException>().WaitAndRetryAsync(new[] { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10) });
+        retryPolicy = Policy<IEnumerable<LiveFlight>>
+            .Handle<FlightException>()
+            .WaitAndRetryAsync(new[] { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10) });
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)

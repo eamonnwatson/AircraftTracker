@@ -31,7 +31,7 @@ builder.ConfigureServices((hostContext, services) =>
     var emailPort = hostContext.Configuration.GetValue("EMAIL_PORT", 587);
     var emailUsername = hostContext.Configuration.GetValue("EMAIL_USERNAME", string.Empty);
     var emailPassword = hostContext.Configuration.GetValue("EMAIL_PASSWORD", string.Empty);
-    var emailTo = hostContext.Configuration.GetValue<string>("EMAIL_TO") ?? throw new Exception("EMAIL_TO Parameter not provided");
+    var emailTo = hostContext.Configuration.GetValue<string>("EMAIL_FROM") ?? throw new Exception("EMAIL_FROM Parameter not provided");
 
     services.AddFluentEmail(emailTo).AddSmtpSender(emailHost, emailPort, emailUsername, emailPassword);
     services.AddTransient<IFlightParser, FlightAware>();
