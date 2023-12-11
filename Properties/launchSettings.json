@@ -3,12 +3,12 @@
     "AircraftTracker": {
       "commandName": "Project",
       "environmentVariables": {
-        "EMAIL_SERVER": "",
-        "EMAIL_PORT": "",
-        "EMAIL_TO": "",
         "AIRPORT": "",
-        "FREQUENCY": "",
-        "DOTNET_ENVIRONMENT": "Development"
+        "DOTNET_ENVIRONMENT": "Development",
+        "SEQ_URL": "",
+        "SEQ_KEY": "",
+        "Pushover_APIToken": "",
+        "Pushover_UserKey": ""
       }
     },
     "Docker": {

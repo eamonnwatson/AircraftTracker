@@ -1,7 +1,8 @@
-﻿using AircraftTracker.Models;
+﻿using AircraftTracker.Entities;
+using FluentResults;
 
 namespace AircraftTracker.Interfaces;
 internal interface IFlightParser
 {
-    Task<IEnumerable<LiveFlight>> GetFlightsAsync(string airportICAO, CancellationToken cancellationToken);
+    Task<Result<IEnumerable<LiveFlight>>> GetFlightsAsync(string airportICAO, CancellationToken cancellationToken = default);
 }

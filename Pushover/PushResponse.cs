@@ -2,9 +2,6 @@
 
 namespace AircraftTracker.Pushover;
 
-/// <summary>
-/// Represents a response message from the Pushover API
-/// </summary>
 [DataContract]
 internal class PushResponse
 {
