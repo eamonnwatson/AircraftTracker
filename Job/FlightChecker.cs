@@ -40,9 +40,9 @@ internal class FlightChecker(ILogger<FlightChecker> logger,
             var updatedTypes = identified.Value.IntersectBy(newFlights.Select(f => f.Type), i => i.AircraftType).Select(UpdateIdentified);
             var updatedAlerts = alerts.Value.IntersectBy(newFlights.Select(f => f.Type), a => a.AircraftType).Select(UpdateAlerts);
 
-            _logger.LogInformation("{NumberFlights} New Flights Found", newFlights.Count);
-            _logger.LogInformation("{NumberTypes} New Types Found", newTypes.Count());
-            _logger.LogInformation("{NumberAlerts} Alert Types Found", updatedAlerts.Count());
+            _logger.LogInformation("{NumberFlights} New Flights Found - {Flights}", newFlights.Count, string.Join(",", newFlights.Select(a => a.Ident)));
+            _logger.LogInformation("{NumberTypes} New Types Found - {Types}", newTypes.Count(), string.Join(",", newTypes.Select(a => a.AircraftType)));
+            _logger.LogInformation("{NumberAlerts} Alert Types Found - {Types}", updatedAlerts.Count(), string.Join(",", updatedAlerts.Select(a => a.AircraftType)));
 
             // Update LiveFlightsTable
             await _sender.Send(new DeleteLiveFlightsCommand(oldFlights));
