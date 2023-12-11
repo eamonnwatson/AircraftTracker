@@ -13,7 +13,7 @@ internal class SendAlertsNotificationCommandHandler(IPushoverClient pushoverClie
             return;
 
         var flights = request.Flights.Select(f => $"{f.Ident} ({f.Type}/{f.FullType}) - {f.From} - {f.Arrive}");
-        var message = string.Format(AlertNotificationMessage, flights);
+        var message = string.Format(AlertNotificationMessage, string.Join("\n", flights));
 
         await _pushoverClient.PushAsync("New Flight Notification", message);
     }
