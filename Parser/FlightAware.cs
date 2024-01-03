@@ -32,7 +32,7 @@ internal class FlightAware(ILogger<FlightAware> logger, IOptions<CheckerOptions>
             if (items.Count == 0)
                 return Result.Fail(ParserError.NoFlightsFound);
 
-            return items;
+            return items.Where(f => !string.IsNullOrWhiteSpace(f.Type)).ToList();
         }
         catch (Exception ex)
         {
